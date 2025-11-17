@@ -1,0 +1,20 @@
+services:
+  next-app:
+    container_name: next-app
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    environment:
+      - NODE_ENV=development      
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    restart: always   
+    ports:
+      - "3000:3000"
+    networks:
+      - next_network     
+
+networks:
+  next_network:
+    driver: bridge
