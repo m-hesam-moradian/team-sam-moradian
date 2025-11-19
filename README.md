@@ -1,4 +1,4 @@
-## 🚀 LMS Project Readme
+## 🚀 LMS Project
 
 This is the official repository for the **Learner Management System (LMS)**, a modern, full-stack application built for efficient content delivery and student progress tracking.
 
