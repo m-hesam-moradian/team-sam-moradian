@@ -1,6 +1,7 @@
 'use client';
 
 import { trpc } from '@/lib/trpc/client';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function DashboardPage() {
   // گرفتن آمار کاربران
@@ -10,267 +11,141 @@ export default function DashboardPage() {
   const users = trpc.getUsers.useQuery();
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Tahoma' }}>
-      <h1 style={{ color: '#333', marginBottom: '30px' }}>🎯 داشبورد مدیریت</h1>
+    <div className="w-full">
+      <h1 className="text-3xl font-bold text-white mb-8">🎯 داشبورد مدیریت</h1>
 
-      {/* کارت‌های آمار */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-          gap: '20px',
-          marginBottom: '30px',
-        }}
-      >
-        {/* کارت کل کاربران */}
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white',
-            padding: '20px',
-            borderRadius: '12px',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          }}
-        >
-          <h3 style={{ margin: '0 0 10px 0', fontSize: '16px' }}>کل کاربران</h3>
-          <p style={{ margin: 0, fontSize: '32px', fontWeight: 'bold' }}>
-            {stats.isLoading ? '...' : stats.data?.data?.total || 0}
-          </p>
-        </div>
+      {/* Stats Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Total Users Card */}
+        <Card className="hover:bg-white/15 transition-colors">
+          <CardContent>
+            <h3 className="text-sm font-medium text-white/80 mb-3">کل کاربران</h3>
+            <p className="text-4xl font-bold text-white">
+              {stats.isLoading ? '...' : stats.data?.data?.total || 0}
+            </p>
+          </CardContent>
+        </Card>
 
-        {/* کارت دانشجویان */}
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-            color: 'white',
-            padding: '20px',
-            borderRadius: '12px',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          }}
-        >
-          <h3 style={{ margin: '0 0 10px 0', fontSize: '16px' }}>دانشجویان</h3>
-          <p style={{ margin: 0, fontSize: '32px', fontWeight: 'bold' }}>
-            {stats.isLoading ? '...' : stats.data?.data?.byRole?.student || 0}
-          </p>
-        </div>
+        {/* Students Card */}
+        <Card className="hover:bg-white/15 transition-colors">
+          <CardContent>
+            <h3 className="text-sm font-medium text-white/80 mb-3">دانشجویان</h3>
+            <p className="text-4xl font-bold text-white">
+              {stats.isLoading ? '...' : stats.data?.data?.byRole?.student || 0}
+            </p>
+          </CardContent>
+        </Card>
 
-        {/* کارت اساتید */}
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-            color: 'white',
-            padding: '20px',
-            borderRadius: '12px',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          }}
-        >
-          <h3 style={{ margin: '0 0 10px 0', fontSize: '16px' }}>اساتید</h3>
-          <p style={{ margin: 0, fontSize: '32px', fontWeight: 'bold' }}>
-            {stats.isLoading ? '...' : stats.data?.data?.byRole?.teacher || 0}
-          </p>
-        </div>
+        {/* Teachers Card */}
+        <Card className="hover:bg-white/15 transition-colors">
+          <CardContent>
+            <h3 className="text-sm font-medium text-white/80 mb-3">اساتید</h3>
+            <p className="text-4xl font-bold text-white">
+              {stats.isLoading ? '...' : stats.data?.data?.byRole?.teacher || 0}
+            </p>
+          </CardContent>
+        </Card>
 
-        {/* کارت مدیران */}
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-            color: 'white',
-            padding: '20px',
-            borderRadius: '12px',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          }}
-        >
-          <h3 style={{ margin: '0 0 10px 0', fontSize: '16px' }}>مدیران</h3>
-          <p style={{ margin: 0, fontSize: '32px', fontWeight: 'bold' }}>
-            {stats.isLoading ? '...' : stats.data?.data?.byRole?.admin || 0}
-          </p>
-        </div>
+        {/* Admins Card */}
+        <Card className="hover:bg-white/15 transition-colors">
+          <CardContent>
+            <h3 className="text-sm font-medium text-white/80 mb-3">مدیران</h3>
+            <p className="text-4xl font-bold text-white">
+              {stats.isLoading ? '...' : stats.data?.data?.byRole?.admin || 0}
+            </p>
+          </CardContent>
+        </Card>
       </div>
+      {/* Recent Users Section */}
+      <Card>
+        <CardContent>
+          <h2 className="text-xl font-bold mb-4 text-white">👥 کاربران اخیر</h2>
 
-      {/* کاربران اخیر */}
-      <div
-        style={{
-          background: 'white',
-          padding: '25px',
-          borderRadius: '12px',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        }}
-      >
-        <h2 style={{ marginBottom: '20px', color: '#333' }}>👥 کاربران اخیر</h2>
-
-        {users.isLoading ? (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
-            <p>⏳ در حال بارگذاری کاربران...</p>
-          </div>
-        ) : users.error ? (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: '40px',
-              color: '#e74c3c',
-            }}
-          >
-            <p>❌ خطا در دریافت کاربران</p>
-            <button
-              onClick={() => users.refetch()}
-              style={{
-                background: '#3498db',
-                color: 'white',
-                border: 'none',
-                padding: '10px 20px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                marginTop: '10px',
-              }}
-            >
-              تلاش مجدد
-            </button>
-          </div>
-        ) : !users.data?.data?.length ? (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
-            <p>📝 هیچ کاربری وجود ندارد</p>
-          </div>
-        ) : (
-          <div
-            style={{
-              display: 'grid',
-              gap: '12px',
-              maxHeight: '400px',
-              overflowY: 'auto',
-            }}
-          >
-            {users.data.data.slice(0, 10).map((user) => (
-              <div
-                key={user._id}
-                style={{
-                  border: '1px solid #e0e0e0',
-                  padding: '15px',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  transition: 'all 0.2s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = 'none';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
+          {users.isLoading ? (
+            <div className="text-center py-10">
+              <p className="text-white/70">⏳ در حال بارگذاری کاربران...</p>
+            </div>
+          ) : users.error ? (
+            <div className="text-center py-10">
+              <p className="text-red-400 mb-4">❌ خطا در دریافت کاربران</p>
+              <button
+                onClick={() => users.refetch()}
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors text-white"
               >
-                <div style={{ flex: 1 }}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '5px',
-                    }}
-                  >
-                    <strong style={{ fontSize: '16px' }}>👤 {user.name}</strong>
-                    <span
-                      style={{
-                        background:
-                          user.role === 'admin'
-                            ? '#e74c3c'
-                            : user.role === 'teacher'
-                            ? '#3498db'
-                            : '#2ecc71',
-                        color: 'white',
-                        padding: '2px 8px',
-                        borderRadius: '12px',
-                        fontSize: '12px',
-                        marginRight: '10px',
-                      }}
-                    >
-                      {user.role === 'student'
-                        ? 'دانشجو'
-                        : user.role === 'teacher'
-                        ? 'استاد'
-                        : 'مدیر'}
-                    </span>
-                  </div>
-                  <div style={{ color: '#666', fontSize: '14px' }}>📧 {user.email}</div>
-                  <div style={{ color: '#999', fontSize: '12px', marginTop: '5px' }}>
-                    📅 عضویت: {new Date(user.createdAt).toLocaleDateString('fa-IR')}
-                  </div>
-                </div>
-
+                تلاش مجدد
+              </button>
+            </div>
+          ) : !users.data?.data?.length ? (
+            <div className="text-center py-10">
+              <p className="text-white/70">📝 هیچ کاربری وجود ندارد</p>
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {users.data.data.slice(0, 10).map((user) => (
                 <div
-                  style={{
-                    display: 'flex',
-                    gap: '8px',
-                  }}
+                  key={user._id}
+                  className="border border-white/10 rounded-lg p-4 flex justify-between items-center hover:bg-white/5 transition-colors"
                 >
-                  <button
-                    style={{
-                      background: '#f39c12',
-                      color: 'white',
-                      border: 'none',
-                      padding: '6px 12px',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '12px',
-                    }}
-                  >
-                    ✏️ ویرایش
-                  </button>
-                  <button
-                    style={{
-                      background: '#e74c3c',
-                      color: 'white',
-                      border: 'none',
-                      padding: '6px 12px',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '12px',
-                    }}
-                  >
-                    👁️ مشاهده
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <strong className="text-base text-white">👤 {user.name}</strong>
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full font-medium ${
+                          user.role === 'admin'
+                            ? 'bg-red-500/30 text-red-200'
+                            : user.role === 'teacher'
+                            ? 'bg-blue-500/30 text-blue-200'
+                            : 'bg-green-500/30 text-green-200'
+                        }`}
+                      >
+                        {user.role === 'student'
+                          ? 'دانشجو'
+                          : user.role === 'teacher'
+                          ? 'استاد'
+                          : 'مدیر'}
+                      </span>
+                    </div>
+                    <div className="text-white/70 text-sm">📧 {user.email}</div>
+                    <div className="text-white/50 text-xs mt-1">
+                      📅 عضویت: {new Date(user.createdAt).toLocaleDateString('fa-IR')}
+                    </div>
+                  </div>
 
-        {/* خلاصه آماری */}
-        {stats.data?.data && (
-          <div
-            style={{
-              marginTop: '20px',
-              padding: '15px',
-              background: '#f8f9fa',
-              borderRadius: '8px',
-              border: '1px solid #e9ecef',
-            }}
-          >
-            <h4 style={{ margin: '0 0 10px 0', color: '#495057' }}>📊 خلاصه آماری</h4>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-                gap: '10px',
-                fontSize: '14px',
-              }}
-            >
-              <div>
-                🎯 کل کاربران: <strong>{stats.data.data.total}</strong>
-              </div>
-              <div>
-                🎓 دانشجویان: <strong>{stats.data.data.byRole.student}</strong>
-              </div>
-              <div>
-                👨‍🏫 اساتید: <strong>{stats.data.data.byRole.teacher}</strong>
-              </div>
-              <div>
-                👨‍💼 مدیران: <strong>{stats.data.data.byRole.admin}</strong>
+                  <div className="flex gap-2">
+                    <button className="px-3 py-1 bg-yellow-500/30 hover:bg-yellow-500/50 text-yellow-200 rounded text-xs font-medium transition-colors">
+                      ✏️ ویرایش
+                    </button>
+                    <button className="px-3 py-1 bg-red-500/30 hover:bg-red-500/50 text-red-200 rounded text-xs font-medium transition-colors">
+                      👁️ مشاهده
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Stats Summary */}
+          {stats.data?.data && (
+            <div className="mt-6 p-4 rounded-lg bg-white/5 border border-white/10">
+              <h4 className="font-semibold mb-3 text-white">📊 خلاصه آماری</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-white">
+                <div>
+                  🎯 کل کاربران: <strong>{stats.data.data.total}</strong>
+                </div>
+                <div>
+                  🎓 دانشجویان: <strong>{stats.data.data.byRole.student}</strong>
+                </div>
+                <div>
+                  👨‍🏫 اساتید: <strong>{stats.data.data.byRole.teacher}</strong>
+                </div>
+                <div>
+                  👨‍💼 مدیران: <strong>{stats.data.data.byRole.admin}</strong>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
