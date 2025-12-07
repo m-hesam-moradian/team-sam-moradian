@@ -1,27 +1,12 @@
 import { initTRPC } from '@trpc/server';
-import { z } from 'zod';
+import { usersRouter } from './users';
+import { lessonsRouter } from './lessons';
 
 const t = initTRPC.create();
 
 export const appRouter = t.router({
-  getUserStats: t.procedure.query(async () => {
-    return {
-      data: {
-        total: 0,
-        byRole: {
-          student: 0,
-          teacher: 0,
-          admin: 0,
-        },
-      },
-    };
-  }),
-
-  getUsers: t.procedure.query(async () => {
-    return {
-      data: [],
-    };
-  }),
+  users: usersRouter,
+  lessons: lessonsRouter,
 });
 
 export type AppRouter = typeof appRouter;
