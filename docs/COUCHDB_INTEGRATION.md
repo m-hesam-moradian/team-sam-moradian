@@ -1,9 +1,11 @@
 # CouchDB Integration Setup Guide
 
 ## Overview
+
 This guide explains how to set up and use the CouchDB integration with the tRPC backend for the admin dashboard CRUD operations.
 
 ## Prerequisites
+
 - Docker and Docker Compose installed
 - Node.js (v18+) and pnpm installed
 - The project already has `nano` (CouchDB client) installed
@@ -19,6 +21,7 @@ docker-compose -f compose.dev.yaml up -d
 ```
 
 This will:
+
 - Start CouchDB on `http://localhost:5984`
 - Start the Next.js app on `http://localhost:3000`
 - Create the `users` and `lessons` databases automatically (on first API call)
@@ -26,11 +29,13 @@ This will:
 ### 2. Access CouchDB Admin UI
 
 Open your browser and go to:
+
 - **URL**: `http://localhost:5984/_utils/`
 - **Username**: `admin`
 - **Password**: `securepassword123`
 
 Here you can:
+
 - View and manage databases
 - Inspect documents
 - Run queries
@@ -46,6 +51,7 @@ COUCHDB_PASSWORD="securepassword123"
 ```
 
 For local development without Docker:
+
 ```dotenv
 COUCHDB_URL="http://admin:securepassword123@localhost:5984"
 ```
@@ -55,7 +61,9 @@ COUCHDB_URL="http://admin:securepassword123@localhost:5984"
 ### Database Structure
 
 #### Users Database (`users`)
+
 Documents have the following structure:
+
 ```typescript
 {
   _id: "user_<uuid>",      // Auto-generated unique ID
@@ -70,7 +78,9 @@ Documents have the following structure:
 ```
 
 #### Lessons Database (`lessons`)
+
 Documents have the following structure:
+
 ```typescript
 {
   _id: "lesson_<uuid>",     // Auto-generated unique ID
@@ -92,6 +102,7 @@ Documents have the following structure:
 The application uses two main routers:
 
 #### `/src/server/routers/users.ts`
+
 - `users.list(input?)` - List users with optional search and role filter
 - `users.create(data)` - Create a new user
 - `users.update(data)` - Update an existing user
@@ -99,6 +110,7 @@ The application uses two main routers:
 - `users.getStats()` - Get user statistics by role
 
 #### `/src/server/routers/lessons.ts`
+
 - `lessons.list(input?)` - List lessons with optional search and course filter
 - `lessons.create(data)` - Create a new lesson
 - `lessons.update(data)` - Update an existing lesson
@@ -109,6 +121,7 @@ The application uses two main routers:
 **File**: `/src/lib/db/couch.ts`
 
 Provides the following methods:
+
 - `db.init()` - Initialize databases
 - `db.getUsers(search?, role?)` - Query users with filters
 - `db.createUser(user)` - Create user
@@ -122,6 +135,7 @@ Provides the following methods:
 ## Using the Admin Dashboard
 
 ### Access the Admin Panel
+
 1. Navigate to `http://localhost:3000/admin/dashboard`
 2. You'll see the sidebar navigation with three options:
    - Dashboard
@@ -133,6 +147,7 @@ Provides the following methods:
 **URL**: `/admin/dashboard/users`
 
 Features:
+
 - **Search**: Search users by name or email in real-time
 - **Filter by Role**: Filter users by student, teacher, or admin
 - **Add User**: Click "Add User" button to open form
@@ -148,6 +163,7 @@ Features:
 **URL**: `/admin/dashboard/lessons`
 
 Features:
+
 - **Search**: Search lessons by title or description in real-time
 - **Filter by Course**: Filter lessons by course ID
 - **Add Lesson**: Click "Add Lesson" button to open form
@@ -171,7 +187,7 @@ import { trpc } from '@/lib/trpc/client';
 // List users with search
 const { data: users } = trpc.users.list.useQuery({
   search: 'john',
-  role: 'student'
+  role: 'student',
 });
 
 // Create user
@@ -179,19 +195,19 @@ const createUser = trpc.users.create.useMutation({
   onSuccess: () => {
     // Refetch data
     refetch();
-  }
+  },
 });
 
 createUser.mutate({
   name: 'John Doe',
   email: 'john@example.com',
   role: 'student',
-  type: 'user'
+  type: 'user',
 });
 
 // Update user
 const updateUser = trpc.users.update.useMutation({
-  onSuccess: () => refetch()
+  onSuccess: () => refetch(),
 });
 
 updateUser.mutate({
@@ -200,12 +216,12 @@ updateUser.mutate({
   name: 'Updated Name',
   email: 'new@example.com',
   role: 'teacher',
-  type: 'user'
+  type: 'user',
 });
 
 // Delete user
 const deleteUser = trpc.users.delete.useMutation({
-  onSuccess: () => refetch()
+  onSuccess: () => refetch(),
 });
 
 deleteUser.mutate('user_123');
@@ -242,7 +258,7 @@ curl -u admin:securepassword123 \
 {
   "selector": {
     "type": "user",
-    "role": {"$eq": "student"}
+    "role": { "$eq": "student" }
   },
   "fields": ["name", "email", "role"]
 }
@@ -251,21 +267,25 @@ curl -u admin:securepassword123 \
 ## Troubleshooting
 
 ### Database not initializing
+
 - Check if CouchDB container is running: `docker-compose ps`
 - Check logs: `docker-compose logs couchdb`
 - Ensure credentials are correct in `.env`
 
 ### Can't connect to CouchDB from app
+
 - Check network: `docker network ls`
 - Verify `COUCHDB_URL` uses correct container name for Docker setup
 - For local development, use `http://admin:password@localhost:5984`
 
 ### Documents not appearing
+
 - Check document type field matches selector in queries
 - Verify documents were actually inserted (check UI)
 - Ensure proper indexing for complex queries
 
 ### Performance issues
+
 - Large datasets may need pagination (consider implementing limit/skip)
 - Create indexes for frequently queried fields in CouchDB UI
 - Consider implementing view-based queries for complex aggregations

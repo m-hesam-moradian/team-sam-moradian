@@ -163,14 +163,17 @@ You need the following installed on your system:
 For detailed information on the project's architecture, setup, and core systems, please refer to the documents below:
 
 ### Getting Started
+
 - **[QUICKSTART.md](./QUICKSTART.md)** - Get started in 5 minutes with Docker
 - **[ADMIN_DASHBOARD_GUIDE.md](./ADMIN_DASHBOARD_GUIDE.md)** - Admin dashboard usage guide with examples
 
 ### Admin Dashboard Features
+
 - **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** - Architecture overview and implementation details
 - **[docs/COUCHDB_INTEGRATION.md](./docs/COUCHDB_INTEGRATION.md)** - Complete CouchDB integration guide with API examples
 
 ### Project Setup & Architecture
+
 - **[Setup Guide](./docs/setup.md)** - How to get the development environment running.
 - **[Architecture Overview](./docs/architecture.md)** - Deep dive into the structure, data flow (GraphQL/tRPC), and service interaction.
 - **[Authentication System](./docs/auth-system.md)** - Details on user roles, session management, and security protocols.
