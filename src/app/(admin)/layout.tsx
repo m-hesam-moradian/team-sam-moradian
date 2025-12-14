@@ -1,5 +1,6 @@
 import AdminHeader from '@/components/AdminHeader';
 import AdminFooter from '@/components/AdminFooter';
+import AdminSidebar from '@/components/AdminSidebar';
 import { AdminClientWrapper } from '@/components/AdminClientWrapper';
 
 interface BackgroundResponse {
@@ -24,6 +25,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-screen relative overflow-hidden">
+      {/* Sidebar */}
+      <AdminSidebar />
+
       {/* Background Image */}
       {backgroundUrl && (
         <div
@@ -38,7 +42,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
       {/* Content Layer */}
-      <div className="relative z-10 flex flex-col min-h-screen">
+      <div className="relative z-10 flex flex-col min-h-screen ml-64">
         <AdminHeader />
         <AdminClientWrapper>
           <main className="flex-1 container mx-auto px-4 py-8 w-full">{children}</main>
