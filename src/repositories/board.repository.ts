@@ -1,20 +1,20 @@
 import { getDb } from '@/lib/db/couch';
-import type { Lesson } from '@/generated/types';
+import type { Board } from '@/generated/types';
 
-export const lessonRepository = {
-  async findById(id: string): Promise<Lesson | null> {
+export const boardRepository = {
+  async findById(id: string): Promise<Board | null> {
     const db = getDb();
     try {
       const doc = await db.get(id);
-      return doc as unknown as Lesson;
+      return doc as unknown as Board;
     } catch (e) {
       return null;
     }
   },
 
-  async create(lesson: Omit<Lesson, '_id' | '_rev'>) {
+  async create(board: Omit<Board, '_id' | '_rev'>) {
     const db = getDb();
-    return await db.insert(lesson);
+    return await db.insert(board);
   },
 
   async delete(id: string, rev: string) {

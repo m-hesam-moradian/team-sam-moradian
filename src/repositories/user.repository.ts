@@ -1,11 +1,11 @@
-import { getDb } from '@/lib/db/couch.ts'; // Assuming your connection logic is here
+// src/repositories/user.repository.ts
+import { getDb } from '@/lib/db/couch';
 import type { User } from '@/generated/types';
 
 export const userRepository = {
-  // FIND
+  // 1. FIND BY EMAIL (The missing piece!)
   async findByEmail(email: string): Promise<User | null> {
-    const db = getDb(); // Connect to DB
-    // CouchDB specific query (Mango Query)
+    const db = getDb();
     const response = await db.find({
       selector: {
         type: 'user',
@@ -18,10 +18,26 @@ export const userRepository = {
     return response.docs[0] as unknown as User;
   },
 
-  // CREATE
+  // 2. FIND BY ID
+  async findById(id: string): Promise<User | null> {
+    const db = getDb();
+    try {
+      const doc = await db.get(id);
+      return doc as unknown as User;
+    } catch (e) {
+      return null;
+    }
+  },
+
+  // 3. CREATE
   async create(user: Omit<User, '_id' | '_rev'>) {
     const db = getDb();
-    const result = await db.insert(user);
-    return result;
+    return await db.insert(user);
+  },
+
+  // 4. DELETE
+  async delete(id: string, rev: string) {
+    const db = getDb();
+    return await db.destroy(id, rev);
   },
 };

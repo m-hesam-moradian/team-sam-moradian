@@ -1,31 +1,39 @@
+// src/services/user.service.ts
 import { userRepository } from '@/repositories/user.repository';
-import type { User } from '@/generated/types'; // <--- Now used below
 
 export const userService = {
-  // We explicitly say this function returns a Promise of a User
   async registerUser(input: {
     name: string;
     email: string;
     role: 'admin' | 'teacher' | 'student';
-  }): Promise<any> {
-    // 1. Check logic
+  }) {
+    // This was failing because findByEmail was missing in the repository
     const existingUser = await userRepository.findByEmail(input.email);
+
     if (existingUser) {
-      throw new Error('User already exists');
+      throw new Error('ALREADY_EXISTS');
     }
 
-    // 2. Prepare data
-    // We cast this to 'User' to ensure it matches our Type Blueprint
-    const newUser: Omit<User, '_id' | '_rev'> = {
-      type: 'user',
+    const newUser = {
+      type: 'user' as const,
       name: input.name,
       email: input.email,
       role: input.role,
       createdAt: new Date().toISOString(),
     };
 
-    // 3. Save
-    const result = await userRepository.create(newUser);
-    return result;
+    return await userRepository.create(newUser);
+  },
+
+  async getUser(id: string) {
+    const user = await userRepository.findById(id);
+    if (!user) throw new Error('NOT_FOUND');
+    return user;
+  },
+
+  async removeUser(id: string) {
+    const user = await userRepository.findById(id);
+    if (!user) throw new Error('NOT_FOUND');
+    return await userRepository.delete(id, user._rev!);
   },
 };

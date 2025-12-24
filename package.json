@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.10",
@@ -27,10 +29,15 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/uuid": "^11.0.0",
+    "@vitest/ui": "^4.0.16",
     "eslint": "^9",
     "eslint-config-next": "16.0.3",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^6.0.3",
+    "vitest": "^4.0.16"
   },
   "packageManager": "pnpm@10.18.3+sha512.bbd16e6d7286fd7e01f6b3c0b3c932cda2965c06a908328f74663f10a9aea51f1129eea615134bf992831b009eabe167ecb7008b597f40ff9bc75946aadfb08d"
 }

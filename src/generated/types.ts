@@ -1,6 +1,5 @@
-/* ⚠️ AUTO-GENERATED — DO NOT EDIT (Simulated for now) */
+/* ⚠️ AUTO-GENERATED — DO NOT EDIT (Simulated) */
 
-// Every item in CouchDB has these fields
 export interface BaseDocument {
   _id: string;
   _rev?: string;
@@ -9,16 +8,25 @@ export interface BaseDocument {
   updatedAt?: string;
 }
 
-// The Typescript shape of a User
 export interface User extends BaseDocument {
   type: 'user';
   name: string;
   email: string;
   role: 'admin' | 'teacher' | 'student';
 }
+
+// ADD THESE:
 export interface Lesson extends BaseDocument {
   type: 'lesson';
   title: string;
-  description: string;
+  content?: string;
   order: number;
+  boardId: string;
+}
+
+export interface Board extends BaseDocument {
+  type: 'board';
+  title: string;
+  description?: string;
+  ownerId: string;
 }
