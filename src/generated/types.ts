@@ -16,3 +16,9 @@ export interface User extends BaseDocument {
   email: string;
   role: 'admin' | 'teacher' | 'student';
 }
+export interface Lesson extends BaseDocument {
+  type: 'lesson';
+  title: string;
+  description: string;
+  order: number;
+}

@@ -1,27 +1,9 @@
-import { initTRPC } from '@trpc/server';
-import { z } from 'zod';
+// src/server/routers/index.ts
+import { router } from '@/server/trpc'; // Point to the new file
+import { userRouter } from './user.router';
 
-const t = initTRPC.create();
-
-export const appRouter = t.router({
-  getUserStats: t.procedure.query(async () => {
-    return {
-      data: {
-        total: 0,
-        byRole: {
-          student: 0,
-          teacher: 0,
-          admin: 0,
-        },
-      },
-    };
-  }),
-
-  getUsers: t.procedure.query(async () => {
-    return {
-      data: [],
-    };
-  }),
+export const appRouter = router({
+  user: userRouter,
 });
 
 export type AppRouter = typeof appRouter;
