@@ -1,53 +1,18 @@
-import AdminHeader from '@/components/AdminHeader';
-import AdminFooter from '@/components/AdminFooter';
-import AdminSidebar from '@/components/AdminSidebar';
-import { AdminClientWrapper } from '@/components/AdminClientWrapper';
+// src/app/(admin)/layout.tsx
+import { Sidebar } from '@/components/admin/sidebar';
+import { AdminHeader } from '@/components/admin/header'; // lowercase 'header'
 
-interface BackgroundResponse {
-  url?: string;
-  background?: string;
-}
-
-async function getRandomBackground(): Promise<string> {
-  try {
-    const response = await fetch('https://picsum.photos/1920/1080?random=' + Date.now(), {
-      method: 'GET',
-      cache: 'no-store',
-    });
-    return response.url || '';
-  } catch {
-    return '';
-  }
-}
-
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const backgroundUrl = await getRandomBackground();
-
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Sidebar */}
-      <AdminSidebar />
+    <div className="flex h-screen w-full bg-neo-bg overflow-hidden">
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:block w-72 h-full">
+        <Sidebar />
+      </aside>
 
-      {/* Background Image */}
-      {backgroundUrl && (
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(${backgroundUrl})`,
-          }}
-        />
-      )}
-
-      {/* Dark Overlay with Blur */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-
-      {/* Content Layer */}
-      <div className="relative z-10 flex flex-col min-h-screen ml-64">
+      <div className="flex flex-1 flex-col h-full overflow-hidden">
         <AdminHeader />
-        <AdminClientWrapper>
-          <main className="flex-1 container mx-auto px-4 py-8 w-full">{children}</main>
-        </AdminClientWrapper>
-        <AdminFooter />
+        <main className="flex-1 overflow-y-auto px-6 pb-10 lg:px-10">{children}</main>
       </div>
     </div>
   );

@@ -1,12 +1,9 @@
-import { initTRPC } from '@trpc/server';
-import { usersRouter } from './users';
-import { lessonsRouter } from './lessons';
+// src/server/routers/index.ts
+import { router } from '@/server/trpc'; // Point to the new file
+import { userRouter } from './user.router';
 
-const t = initTRPC.create();
-
-export const appRouter = t.router({
-  users: usersRouter,
-  lessons: lessonsRouter,
+export const appRouter = router({
+  user: userRouter,
 });
 
 export type AppRouter = typeof appRouter;
