@@ -12,8 +12,8 @@ export const getDb = () => {
   if (!nano) {
     nano = Nano(COUCHDB_URL);
   }
-  
+
   // Connect to the specific database
   const db = nano.use(DB_NAME);
   return db;
-};  
+};

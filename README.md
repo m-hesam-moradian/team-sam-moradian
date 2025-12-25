@@ -10,6 +10,12 @@ This is the official repository for the **Learner Management System (LMS)**, a m
 - **Progress Tracking:** Comprehensive student progress monitoring and analytics.
 - **User Roles:** Separate roles for **Administrators**, **Instructors**, and **Students**.
 - **Scalable Architecture:** Designed for performance and easy scaling using modern technologies.
+- **Admin Dashboard:** Professional admin panel with Users and Lessons management (NEW)
+  - Complete CRUD operations for users and lessons
+  - Real-time search and advanced filtering
+  - Sidebar navigation with active states
+  - Modal-based forms with validation
+  - Dark theme UI with responsive design
 
 ---
 
@@ -156,12 +162,22 @@ You need the following installed on your system:
 
 For detailed information on the project's architecture, setup, and core systems, please refer to the documents below:
 
-- **Project Setup:** How to get the development environment running.
-  - [Setup Guide](./docs/setup.md)
-- **Project Architecture:** Deep dive into the structure, data flow (GraphQL/tRPC), and service interaction.
-  - [Architecture Overview](./docs/architecture.md)
-- **Login and Authentication System:** Details on user roles, session management, and security protocols.
-  - [Authentication System](./docs/auth-system.md)
+### Getting Started
+
+- **[QUICKSTART.md](./QUICKSTART.md)** - Get started in 5 minutes with Docker
+- **[ADMIN_DASHBOARD_GUIDE.md](./ADMIN_DASHBOARD_GUIDE.md)** - Admin dashboard usage guide with examples
+
+### Admin Dashboard Features
+
+- **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** - Architecture overview and implementation details
+- **[docs/COUCHDB_INTEGRATION.md](./docs/COUCHDB_INTEGRATION.md)** - Complete CouchDB integration guide with API examples
+
+### Project Setup & Architecture
+
+- **[Setup Guide](./docs/setup.md)** - How to get the development environment running.
+- **[Architecture Overview](./docs/architecture.md)** - Deep dive into the structure, data flow (GraphQL/tRPC), and service interaction.
+- **[Authentication System](./docs/auth-system.md)** - Details on user roles, session management, and security protocols.
+- **[CouchDB Setup](./docs/couchdb/docker-run.md)** - Docker commands and setup instructions
 
 ---
 
