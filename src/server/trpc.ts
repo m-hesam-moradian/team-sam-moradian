@@ -1,9 +1,14 @@
-// src/server/trpc.ts
 import { initTRPC } from '@trpc/server';
+import superjson from 'superjson';
 
-// 1. Initialize tRPC
-const t = initTRPC.create();
+const t = initTRPC.create({
+  transformer: superjson,
+  // ADD THIS BLOCK:
+  errorFormatter({ shape, error }) {
+    console.error('❌ tRPC Error:', error); // This will print the REAL error in your Docker logs
+    return shape;
+  },
+});
 
-// 2. Export reusable helpers
 export const router = t.router;
 export const publicProcedure = t.procedure;

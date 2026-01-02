@@ -40,4 +40,13 @@ export const userRepository = {
     const db = getDb();
     return await db.destroy(id, rev);
   },
+  async findAll(): Promise<User[]> {
+    const db = getDb();
+    const response = await db.find({
+      selector: {
+        type: 'user', // This ensures we only get users, not lessons or boards
+      },
+    });
+    return response.docs as unknown as User[];
+  },
 };

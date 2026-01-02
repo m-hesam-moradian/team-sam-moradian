@@ -1,19 +1,11 @@
-import Nano from 'nano';
+import nano from 'nano';
 
-// 1. Get credentials from environment variables (or defaults for local dev)
-// Note: In a real app, never hardcode passwords. This default is just for your local docker setup.
-const COUCHDB_URL = process.env.COUCHDB_URL || 'http://admin:securepassword123@localhost:5984';
-const DB_NAME = process.env.COUCHDB_DB || 'lms_db';
+// WRONG: 'http://admin:password@localhost:5984'
+// RIGHT: Use the service name from docker-compose
+const COUCHDB_URL = 'http://admin:securepassword123@next-couchdb:5984';
 
-let nano: Nano.ServerScope | undefined;
+const couch = nano(COUCHDB_URL);
 
 export const getDb = () => {
-  // Singleton pattern: don't create a new connection every time
-  if (!nano) {
-    nano = Nano(COUCHDB_URL);
-  }
-
-  // Connect to the specific database
-  const db = nano.use(DB_NAME);
-  return db;
+  return couch.use('lms_db');
 };

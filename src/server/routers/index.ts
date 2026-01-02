@@ -1,5 +1,4 @@
-// src/server/routers/index.ts
-import { router } from '@/server/trpc'; // Point to the new file
+import { router } from '../trpc';
 import { userRouter } from './user.router';
 
 export const appRouter = router({

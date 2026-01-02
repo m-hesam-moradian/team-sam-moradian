@@ -2,15 +2,14 @@
 import { userService } from '@/services/user.service';
 
 export const userAdapter = {
-  // This takes the input from tRPC and passes it to the Service
-  registerUser: async (input: {
-    name: string;
-    email: string;
-    role: 'admin' | 'teacher' | 'student';
-  }) => {
-    // Here we could also format data if the Service expected something slightly different
+  createUser: async (input: any) => {
+    // Ensure this calls registerUser
     return await userService.registerUser(input);
   },
-
-  // We will add more (getUser, deleteUser) as we build them
+  listUsers: async () => {
+    return await userService.getAllUsers(); // Make sure this exists in your service
+  },
+  deleteUser: async (id: string) => {
+    return await userService.removeUser(id);
+  },
 };

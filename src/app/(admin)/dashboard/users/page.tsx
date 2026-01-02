@@ -1,256 +1,99 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { trpc } from '@/lib/trpc/client';
-import { User } from '@/server/routers/users';
+import { NeoCard } from '@/components/ui/neo-card';
+import { NeoButton } from '@/components/ui/neo-button';
+import { NeoInput } from '@/components/ui/neo-input';
+import { UserPlus, Trash2, ShieldCheck, Mail } from 'lucide-react';
+import { useState } from 'react';
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [search, setSearch] = useState('');
-  const [filterRole, setFilterRole] = useState<string>('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState<Partial<User>>({
-    name: '',
-    email: '',
-    role: 'student',
-  });
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
 
-  const { data: listData, refetch } = trpc.users.list.useQuery({
-    search: search || undefined,
-    role: (filterRole as any) || undefined,
-  });
+  const utils = trpc.useUtils();
 
-  const createMutation = trpc.users.create.useMutation({
+  // 1. Fetch Users from DB
+  const { data: users, isLoading } = trpc.user.getAll.useQuery();
+
+  // 2. Create User Mutation
+  const createUser = trpc.user.create.useMutation({
     onSuccess: () => {
-      refetch();
-      setFormData({ name: '', email: '', role: 'student' });
-      setIsModalOpen(false);
+      utils.user.getAll.invalidate();
+      setName('');
+      setEmail('');
+      alert('User Created!'); // Add this to be 100% sure
+    },
+    onError: (err) => {
+      // This will show you exactly what is wrong (e.g., "Email is invalid")
+      console.error('Mutation Error:', err);
+      alert('Error: ' + err.message);
     },
   });
 
-  const updateMutation = trpc.users.update.useMutation({
-    onSuccess: () => {
-      refetch();
-      setFormData({ name: '', email: '', role: 'student' });
-      setEditingId(null);
-      setIsModalOpen(false);
-    },
+  // 3. Delete User Mutation
+  const deleteUser = trpc.user.delete.useMutation({
+    onSuccess: () => utils.user.getAll.invalidate(),
   });
-
-  const deleteMutation = trpc.users.delete.useMutation({
-    onSuccess: () => {
-      refetch();
-    },
-  });
-
-  useEffect(() => {
-    if (listData?.data) {
-      setUsers(listData.data);
-    }
-  }, [listData?.data]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.role) {
-      alert('Please fill in all fields');
-      return;
-    }
-
-    if (editingId) {
-      const userToUpdate = users.find((u) => u._id === editingId);
-      if (userToUpdate) {
-        updateMutation.mutate({
-          ...formData,
-          _id: editingId,
-          _rev: userToUpdate._rev,
-          type: 'user',
-        } as User);
-      }
-    } else {
-      createMutation.mutate({
-        name: formData.name,
-        email: formData.email,
-        role: formData.role as any,
-        type: 'user',
-      });
-    }
-  };
-
-  const handleEdit = (user: User) => {
-    setFormData(user);
-    setEditingId(user._id!);
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this user?')) {
-      deleteMutation.mutate(id);
-    }
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setEditingId(null);
-    setFormData({ name: '', email: '', role: 'student' });
-  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-white">Users Management</h1>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
-        >
-          Add User
-        </button>
-      </div>
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <h1 className="text-2xl font-black text-slate-700 uppercase tracking-tighter">
+          Users <span className="text-accent">Directory</span>
+        </h1>
 
-      {/* Filters */}
-      <div className="flex gap-4 bg-slate-800 p-4 rounded-lg">
-        <input
-          type="text"
-          placeholder="Search by name or email..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 px-4 py-2 rounded-lg bg-slate-700 text-white placeholder-slate-400 border border-slate-600 focus:border-blue-500 focus:outline-none"
-        />
-        <select
-          value={filterRole}
-          onChange={(e) => setFilterRole(e.target.value)}
-          className="px-4 py-2 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
-        >
-          <option value="">All Roles</option>
-          <option value="student">Student</option>
-          <option value="teacher">Teacher</option>
-          <option value="admin">Admin</option>
-        </select>
-      </div>
-
-      {/* Users Table */}
-      <div className="bg-slate-800 rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-white">
-            <thead className="bg-slate-900">
-              <tr>
-                <th className="px-6 py-3 text-left">Name</th>
-                <th className="px-6 py-3 text-left">Email</th>
-                <th className="px-6 py-3 text-left">Role</th>
-                <th className="px-6 py-3 text-left">Created At</th>
-                <th className="px-6 py-3 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-700">
-              {users.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-slate-400">
-                    No users found
-                  </td>
-                </tr>
-              ) : (
-                users.map((user) => (
-                  <tr key={user._id} className="hover:bg-slate-700 transition-colors">
-                    <td className="px-6 py-4">{user.name}</td>
-                    <td className="px-6 py-4">{user.email}</td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          user.role === 'admin'
-                            ? 'bg-red-900/50 text-red-300'
-                            : user.role === 'teacher'
-                            ? 'bg-purple-900/50 text-purple-300'
-                            : 'bg-blue-900/50 text-blue-300'
-                        }`}
-                      >
-                        {user.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(user)}
-                          className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm transition-colors"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(user._id!)}
-                          className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+        {/* Create Form */}
+        <div className="flex gap-4 w-full md:w-auto">
+          <NeoInput
+            placeholder="Full Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <NeoInput placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <NeoButton
+            onClick={() => {
+              console.log('Attempting to send:', { name, email, role: 'student' });
+              createUser.mutate({ name, email, role: 'student' });
+            }}
+          >
+            <UserPlus size={20} />
+          </NeoButton>
+          {createUser.error && (
+            <p className="text-red-500 text-xs mt-2">{createUser.error.message}</p>
+          )}
         </div>
       </div>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-slate-800 rounded-lg p-8 max-w-md w-full mx-4">
-            <h2 className="text-2xl font-bold text-white mb-6">
-              {editingId ? 'Edit User' : 'Add New User'}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Name</label>
-                <input
-                  type="text"
-                  value={formData.name || ''}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
-                />
+      {/* Users List */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {isLoading ? (
+          <p className="text-slate-400 font-bold animate-pulse">Accessing Database...</p>
+        ) : (
+          users?.map((user) => (
+            <NeoCard key={user._id} className="flex items-center justify-between">
+              <div className="flex items-center gap-5">
+                <div className="h-14 w-14 rounded-2xl shadow-neo-in flex items-center justify-center text-accent">
+                  <ShieldCheck size={28} />
+                </div>
+                <div>
+                  <h3 className="font-black text-slate-700">{user.name}</h3>
+                  <p className="text-sm text-slate-400 flex items-center gap-2">
+                    <Mail size={14} /> {user.email}
+                  </p>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
-                <input
-                  type="email"
-                  value={formData.email || ''}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-2 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Role</label>
-                <select
-                  value={formData.role || 'student'}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
-                  className="w-full px-4 py-2 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
-                >
-                  <option value="student">Student</option>
-                  <option value="teacher">Teacher</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-              <div className="flex gap-4 pt-6">
-                <button
-                  type="submit"
-                  disabled={createMutation.isPending || updateMutation.isPending}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-2 rounded-lg transition-colors"
-                >
-                  {createMutation.isPending || updateMutation.isPending ? 'Saving...' : 'Save'}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-white py-2 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+
+              <button
+                onClick={() => deleteUser.mutate(user._id)}
+                className="p-3 rounded-xl text-slate-300 hover:text-red-500 hover:shadow-neo-out active:shadow-neo-in transition-all"
+              >
+                <Trash2 size={20} />
+              </button>
+            </NeoCard>
+          ))
+        )}
+      </div>
     </div>
   );
 }

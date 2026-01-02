@@ -1,4 +1,6 @@
 // src/app/(admin)/dashboard/page.tsx
+'use client';
+
 import { NeoCard } from '@/components/ui/neo-card';
 import { Users, Layers, BookOpen } from 'lucide-react';
 
