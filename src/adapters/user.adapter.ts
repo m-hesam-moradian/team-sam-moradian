@@ -15,4 +15,7 @@ export const userAdapter = {
   getStats: async () => {
     return await userService.getStats();
   },
+  updateUser: async (id: string, input: { name: string; email: string }) => {
+    return await userService.updateUser(id, input);
+  },
 };
