@@ -4,7 +4,20 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
 import { useState } from 'react';
 import { trpc } from '@/lib/trpc/client';
-import superjson from 'superjson'; // Added this
+import superjson from 'superjson';
+
+// Restoration of getBaseUrl for SSR support
+function getBaseUrl() {
+  if (typeof window !== 'undefined') return ''; // browser should use relative url
+
+  // Specific check for GitHub Codespaces internal networking
+  if (process.env.CODESPACE_NAME) {
+    return `https://${process.env.CODESPACE_NAME}-3000.app.github.dev`;
+  }
+
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return `http://localhost:3000`;
+}
 
 export function TRPCProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -12,8 +25,8 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
     trpc.createClient({
       links: [
         httpBatchLink({
-          url: `/api/trpc`, // Simplified for Codespaces
-          transformer: superjson, // Ensures IDs and Dates are handled correctly
+          url: `${getBaseUrl()}/api/trpc`,
+          transformer: superjson,
         }),
       ],
     }),
