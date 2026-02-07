@@ -1,305 +1,152 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { trpc } from '@/lib/trpc/client';
-import { Lesson } from '@/server/routers/lessons';
+import { NeoCard } from '@/components/ui/neo-card';
+import { NeoButton } from '@/components/ui/neo-button';
+import { NeoInput } from '@/components/ui/neo-input';
+import { BookOpen, Plus, Trash2, Pencil, Layers } from 'lucide-react';
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function LessonsPage() {
-  const [lessons, setLessons] = useState<Lesson[]>([]);
-  const [search, setSearch] = useState('');
-  const [courseId, setCourseId] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState<Partial<Lesson>>({
-    title: '',
-    description: '',
-    content: '',
-    courseId: '',
-    instructor: '',
-    duration: undefined,
-  });
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [title, setTitle] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null); // 1. Track which lesson is being edited
 
-  const { data: listData, refetch } = trpc.lessons.list.useQuery({
-    search: search || undefined,
-    courseId: courseId || undefined,
-  });
+  const utils = trpc.useUtils();
+  const { data: lessons, isLoading } = trpc.lesson.getAll.useQuery();
 
-  const createMutation = trpc.lessons.create.useMutation({
+  const createLesson = trpc.lesson.create.useMutation({
     onSuccess: () => {
-      refetch();
-      setFormData({
-        title: '',
-        description: '',
-        content: '',
-        courseId: '',
-        instructor: '',
-        duration: undefined,
-      });
-      setIsModalOpen(false);
+      utils.lesson.getAll.invalidate();
+      closeModal();
     },
   });
 
-  const updateMutation = trpc.lessons.update.useMutation({
+  // 2. Add the Update Mutation
+  const updateLesson = trpc.lesson.update.useMutation({
     onSuccess: () => {
-      refetch();
-      setFormData({
-        title: '',
-        description: '',
-        content: '',
-        courseId: '',
-        instructor: '',
-        duration: undefined,
-      });
-      setEditingId(null);
-      setIsModalOpen(false);
+      utils.lesson.getAll.invalidate();
+      closeModal();
     },
   });
 
-  const deleteMutation = trpc.lessons.delete.useMutation({
-    onSuccess: () => {
-      refetch();
-    },
+  const deleteLesson = trpc.lesson.delete.useMutation({
+    onSuccess: () => utils.lesson.getAll.invalidate(),
   });
 
-  useEffect(() => {
-    if (listData?.data) {
-      setLessons(listData.data);
-    }
-  }, [listData?.data]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.title || !formData.courseId || !formData.instructor) {
-      alert('Please fill in title, course ID, and instructor');
-      return;
-    }
-
-    if (editingId) {
-      const lessonToUpdate = lessons.find((l) => l._id === editingId);
-      if (lessonToUpdate) {
-        updateMutation.mutate({
-          ...formData,
-          _id: editingId,
-          _rev: lessonToUpdate._rev,
-          type: 'lesson',
-        } as Lesson);
-      }
-    } else {
-      createMutation.mutate({
-        title: formData.title,
-        description: formData.description || '',
-        content: formData.content || '',
-        courseId: formData.courseId,
-        instructor: formData.instructor,
-        duration: formData.duration,
-        type: 'lesson',
-      });
-    }
-  };
-
-  const handleEdit = (lesson: Lesson) => {
-    setFormData(lesson);
-    setEditingId(lesson._id!);
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this lesson?')) {
-      deleteMutation.mutate(id);
-    }
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  // 3. Helper to reset everything when closing
+  const closeModal = () => {
+    setIsOpen(false);
     setEditingId(null);
-    setFormData({
-      title: '',
-      description: '',
-      content: '',
-      courseId: '',
-      instructor: '',
-      duration: undefined,
-    });
+    setTitle('');
+  };
+
+  // 4. Triggered when Pencil is clicked
+  const handleEdit = (lesson: any) => {
+    setEditingId(lesson._id);
+    setTitle(lesson.title);
+    setIsOpen(true);
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-white">Lessons Management</h1>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
-        >
-          Add Lesson
-        </button>
-      </div>
+    <div className="space-y-10 animate-in fade-in duration-500">
+      <h1 className="text-2xl font-black text-slate-700 tracking-tighter uppercase">
+        Lessons <span className="text-accent">Library</span>
+      </h1>
 
-      {/* Filters */}
-      <div className="flex gap-4 bg-slate-800 p-4 rounded-lg">
-        <input
-          type="text"
-          placeholder="Search by title or description..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 px-4 py-2 rounded-lg bg-slate-700 text-white placeholder-slate-400 border border-slate-600 focus:border-blue-500 focus:outline-none"
-        />
-        <input
-          type="text"
-          placeholder="Filter by course ID..."
-          value={courseId}
-          onChange={(e) => setCourseId(e.target.value)}
-          className="flex-1 px-4 py-2 rounded-lg bg-slate-700 text-white placeholder-slate-400 border border-slate-600 focus:border-blue-500 focus:outline-none"
-        />
-      </div>
-
-      {/* Lessons Table */}
-      <div className="bg-slate-800 rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-white">
-            <thead className="bg-slate-900">
-              <tr>
-                <th className="px-6 py-3 text-left">Title</th>
-                <th className="px-6 py-3 text-left">Description</th>
-                <th className="px-6 py-3 text-left">Course ID</th>
-                <th className="px-6 py-3 text-left">Instructor</th>
-                <th className="px-6 py-3 text-left">Duration (min)</th>
-                <th className="px-6 py-3 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-700">
-              {lessons.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-slate-400">
-                    No lessons found
-                  </td>
-                </tr>
-              ) : (
-                lessons.map((lesson) => (
-                  <tr key={lesson._id} className="hover:bg-slate-700 transition-colors">
-                    <td className="px-6 py-4 font-medium">{lesson.title}</td>
-                    <td className="px-6 py-4 text-sm text-slate-300">
-                      {lesson.description || '-'}
-                    </td>
-                    <td className="px-6 py-4">{lesson.courseId}</td>
-                    <td className="px-6 py-4">{lesson.instructor}</td>
-                    <td className="px-6 py-4">{lesson.duration ? `${lesson.duration}` : '-'}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(lesson)}
-                          className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm transition-colors"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(lesson._id!)}
-                          className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-slate-800 rounded-lg p-8 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
-            <h2 className="text-2xl font-bold text-white mb-6">
-              {editingId ? 'Edit Lesson' : 'Add New Lesson'}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Title *</label>
-                <input
-                  type="text"
-                  value={formData.title || ''}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-2 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
-                />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* ADD / EDIT MODAL CARD */}
+        <Dialog open={isOpen} onOpenChange={(val) => !val && closeModal()}>
+          <DialogTrigger asChild>
+            <button
+              onClick={() => setIsOpen(true)}
+              className="h-44 bg-neo-bg rounded-neo shadow-neo-out flex flex-col items-center justify-center p-8 text-accent hover:shadow-neo-in transition-all border-2 border-dashed border-accent/20 group"
+            >
+              <div className="p-4 rounded-full shadow-neo-out group-hover:shadow-neo-in transition-all">
+                <Plus size={32} />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Description</label>
-                <textarea
-                  value={formData.description || ''}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-blue-500 focus:outline-none h-20"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Course ID *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.courseId || ''}
-                    onChange={(e) => setFormData({ ...formData, courseId: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Instructor *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.instructor || ''}
-                    onChange={(e) => setFormData({ ...formData, instructor: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Duration (minutes)
-                </label>
-                <input
-                  type="number"
-                  value={formData.duration || ''}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      duration: e.target.value ? parseInt(e.target.value) : undefined,
-                    })
+              <span className="mt-4 font-black uppercase text-xs tracking-widest">New Lesson</span>
+            </button>
+          </DialogTrigger>
+          <DialogContent className="bg-neo-bg border-none shadow-neo-out rounded-neo-xl">
+            <DialogHeader>
+              <DialogTitle className="text-slate-700 font-black uppercase">
+                {editingId ? 'Edit Lesson' : 'Create Lesson'}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6 py-4">
+              <NeoInput
+                placeholder="Lesson Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+              <NeoButton
+                className="w-full text-accent"
+                onClick={() => {
+                  if (editingId) {
+                    updateLesson.mutate({ id: editingId, title });
+                  } else {
+                    createLesson.mutate({ title, order: 1, boardId: 'default' });
                   }
-                  className="w-full px-4 py-2 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-blue-500 focus:outline-none"
-                />
+                }}
+                disabled={createLesson.isPending || updateLesson.isPending}
+              >
+                {editingId ? 'Save Changes' : 'Create Lesson'}
+              </NeoButton>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* LOADING STATE */}
+        {isLoading &&
+          [1, 2, 3].map((i) => (
+            <div key={i} className="h-44 bg-neo-bg rounded-neo shadow-neo-out p-8 space-y-4">
+              <Skeleton className="h-12 w-12 rounded-xl bg-slate-300/50" />
+              <Skeleton className="h-4 w-3/4 bg-slate-300/50" />
+            </div>
+          ))}
+
+        {/* LESSON LIST */}
+        {lessons?.map((lesson) => (
+          <NeoCard key={lesson._id} className="h-44 flex flex-col justify-between">
+            <div className="flex items-center gap-5">
+              <div className="h-14 w-14 rounded-2xl shadow-neo-in flex items-center justify-center text-blue-500">
+                <BookOpen size={28} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Content</label>
-                <textarea
-                  value={formData.content || ''}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  className="w-full px-4 py-2 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-blue-500 focus:outline-none h-24"
-                />
+                <h3 className="font-black text-slate-700">{lesson.title}</h3>
+                <p className="text-xs text-slate-400 flex items-center gap-1">
+                  <Layers size={12} /> ID: {lesson._id.substring(0, 8)}
+                </p>
               </div>
-              <div className="flex gap-4 pt-6">
-                <button
-                  type="submit"
-                  disabled={createMutation.isPending || updateMutation.isPending}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-2 rounded-lg transition-colors"
-                >
-                  {createMutation.isPending || updateMutation.isPending ? 'Saving...' : 'Save'}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-white py-2 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            </div>
+
+            <div className="flex justify-end gap-3">
+              {/* 5. Connected handleEdit here */}
+              <button
+                onClick={() => handleEdit(lesson)}
+                className="p-3 rounded-xl text-slate-300 hover:text-accent hover:shadow-neo-out active:shadow-neo-in transition-all"
+              >
+                <Pencil size={18} />
+              </button>
+              <button
+                onClick={() => deleteLesson.mutate(lesson._id)}
+                className="p-3 rounded-xl text-slate-300 hover:text-red-500 hover:shadow-neo-out active:shadow-neo-in transition-all"
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
+          </NeoCard>
+        ))}
+      </div>
     </div>
   );
 }

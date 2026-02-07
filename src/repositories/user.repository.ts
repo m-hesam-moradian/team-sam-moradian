@@ -49,4 +49,14 @@ export const userRepository = {
     });
     return response.docs.length;
   },
+  async update(id: string, data: Partial<User>) {
+    const db = getDb();
+    const current = await db.get(id);
+    return await db.insert({
+      ...current,
+      ...data,
+      _id: id,
+      _rev: current._rev, // CouchDB needs the latest revision to update
+    });
+  },
 };

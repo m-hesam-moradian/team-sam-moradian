@@ -36,4 +36,7 @@ export const userService = {
     const count = await userRepository.countUsers();
     return { totalUsers: count };
   },
+  async updateUser(id: string, input: { name?: string; email?: string }) {
+    return await userRepository.update(id, input);
+  },
 };

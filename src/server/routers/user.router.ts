@@ -22,4 +22,10 @@ export const userRouter = router({
   getStats: publicProcedure.query(async () => {
     return await userAdapter.getStats();
   }),
+  update: publicProcedure
+    .input(z.object({ id: z.string(), name: z.string(), email: z.string() }))
+    .mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      return await userAdapter.updateUser(id, data);
+    }),
 });

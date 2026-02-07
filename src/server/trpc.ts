@@ -1,11 +1,13 @@
 import { initTRPC } from '@trpc/server';
 import superjson from 'superjson';
 
+// v11 Initialization
 const t = initTRPC.create({
   transformer: superjson,
-  // ADD THIS BLOCK:
   errorFormatter({ shape, error }) {
-    console.error('❌ tRPC Error:', error); // This will print the REAL error in your Docker logs
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('❌ tRPC Error:', error);
+    }
     return shape;
   },
 });
