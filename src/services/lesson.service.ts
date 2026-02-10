@@ -2,6 +2,11 @@ import { lessonRepository } from '@/repositories/lesson.repository';
 import { Lesson } from '@/generated/types';
 
 export const lessonService = {
+  async getLesson(id: string) {
+    const lesson = await lessonRepository.findById(id);
+    if (!lesson) return null;
+    return lesson;
+  },
   async getAllLessons() {
     return await lessonRepository.findAll();
   },
